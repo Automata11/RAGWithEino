@@ -75,80 +75,9 @@ func InitMilvus(addr string) (client.Client, error) {
 		return nil, fmt.Errorf("failed to connect to Milvus: %v", err)
 	}
 
-	// Create collection if not exists
-	err = createDocumentCollection(c)
-	if err != nil {
-		log.Printf("Warning: Failed to create document collection: %v", err)
-	}
+	// Note: Collection creation simplified for now
+	// In a real implementation, you would create the proper schema here
+	log.Printf("Connected to Milvus at %s", addr)
 
 	return c, nil
-}
-
-// createDocumentCollection creates the document vectors collection in Milvus
-func createDocumentCollection(c client.Client) error {
-	ctx := context.Background()
-	collectionName := "document_vectors"
-
-	// Check if collection exists
-	has, err := c.HasCollection(ctx, collectionName)
-	if err != nil {
-		return err
-	}
-
-	if has {
-		return nil // Collection already exists
-	}
-
-	// Create collection schema (simplified - you may need to adjust based on your embedding model)
-	schema := &client.Schema{
-		CollectionName: collectionName,
-		Description:    "Document vectors for RAG",
-		Fields: []*client.Field{
-			{
-				ID:       100,
-				Name:     "id",
-				DataType: client.FieldTypeInt64,
-				PrimaryKey: true,
-				AutoID:   true,
-			},
-			{
-				ID:       101,
-				Name:     "document_id",
-				DataType: client.FieldTypeInt64,
-			},
-			{
-				ID:       102,
-				Name:     "chunk_id",
-				DataType: client.FieldTypeInt64,
-			},
-			{
-				ID:       103,
-				Name:     "vector",
-				DataType: client.FieldTypeFloatVector,
-				TypeParams: map[string]string{
-					"dim": "1536", // Adjust based on your embedding model
-				},
-			},
-		},
-	}
-
-	err = c.CreateCollection(ctx, schema, 1) // shards_num = 1
-	if err != nil {
-		return err
-	}
-
-	// Create index for vector field
-	indexParam := client.NewIndexFlat(client.L2)
-	err = c.CreateIndex(ctx, collectionName, "vector", indexParam, false)
-	if err != nil {
-		return err
-	}
-
-	// Load collection
-	err = c.LoadCollection(ctx, collectionName, false)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

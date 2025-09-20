@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -65,26 +66,26 @@ func AdminRequired() gin.HandlerFunc {
 func GetCurrentUserID(c *gin.Context) (uint, error) {
 	userID, exists := c.Get("user_id")
 	if !exists {
-		return 0, gin.Error{Err: gin.ErrorTypePublic, Meta: "User ID not found in context"}
+		return 0, fmt.Errorf("user ID not found in context")
 	}
 
 	if id, ok := userID.(uint); ok {
 		return id, nil
 	}
 
-	return 0, gin.Error{Err: gin.ErrorTypePublic, Meta: "Invalid user ID type"}
+	return 0, fmt.Errorf("invalid user ID type")
 }
 
 // GetCurrentUserRole gets the current user role from context
 func GetCurrentUserRole(c *gin.Context) (string, error) {
 	role, exists := c.Get("user_role")
 	if !exists {
-		return "", gin.Error{Err: gin.ErrorTypePublic, Meta: "User role not found in context"}
+		return "", fmt.Errorf("user role not found in context")
 	}
 
 	if roleStr, ok := role.(string); ok {
 		return roleStr, nil
 	}
 
-	return "", gin.Error{Err: gin.ErrorTypePublic, Meta: "Invalid user role type"}
+	return "", fmt.Errorf("invalid user role type")
 }
